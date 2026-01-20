@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24b4992ae5354c243b5b61c61ac8cd15, type: 3}
   m_Name: DAT_ZoneConfig
   m_EditorClassIdentifier: 
-  ZoneType: 0
+  SafeZoneInterval: 5
+  SuperZoneInterval: 30
+  StandartWheel: {fileID: 11400000, guid: cbc4deedc5b3f434ab353fe70e4e0d4a, type: 2}
+  SafeZoneWheel: {fileID: 11400000, guid: 89c05266f628c2b42a88129a58b2c7e7, type: 2}
+  SuperZoneWheel: {fileID: 11400000, guid: f859d940823ff174d81f6463d1ac7e13, type: 2}

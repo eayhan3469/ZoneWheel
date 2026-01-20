@@ -7,4 +7,14 @@ public class ItemData : ScriptableObject
 {
     public string DisplayName;
     public Sprite Icon;
+    public ItemCategory Category;
+}
+
+public enum ItemCategory : byte
+{
+    Coin,
+    Gold,
+    Weapon,
+    Armor,
+    Bomb
 }
