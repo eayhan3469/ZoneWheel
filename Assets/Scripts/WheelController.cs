@@ -3,10 +3,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WheelController : MonoBehaviour
 {
     [SerializeField] private Transform wheelRotator;
+    [SerializeField] private Image wheelBackgroundImage;
+    [SerializeField] private Image wheelIndicatorImage;
 
     [Header("Animation Settings")]
     [SerializeField] private float spinDuration = 4f;
@@ -14,14 +17,17 @@ public class WheelController : MonoBehaviour
     [SerializeField] private Ease spinEase = Ease.OutQuart;
 
     private List<WheelSlot> _activeSlots = new List<WheelSlot>();
-
     private float _anglePerSlot;
 
     public bool IsSpinning { get; private set; } = false;
 
     public void SetupWheel(WheelData wheelData)
     {
+        wheelBackgroundImage.sprite = wheelData.WheelBackground;
+        wheelIndicatorImage.sprite = wheelData.WheelIndicator;
+
         WheelSlot[] existingSlots = wheelRotator.GetComponentsInChildren<WheelSlot>(true);
+
 
         if (existingSlots.Length == 0)
         {
@@ -44,12 +50,11 @@ public class WheelController : MonoBehaviour
 
             slot.gameObject.SetActive(true);
             slot.Setup(data);
-
             _activeSlots.Add(slot);
         }
 
         if (existingSlots.Length > 0)
-            _anglePerSlot = 369f / existingSlots.Length;
+            _anglePerSlot = 360f / existingSlots.Length;
 
         wheelRotator.rotation = Quaternion.identity;
     }
@@ -59,6 +64,8 @@ public class WheelController : MonoBehaviour
         if (IsSpinning)
             return;
 
+        IsSpinning = true;
+
         // First slot is at the top (0 degreess)
         float targetAngle = -(targetIndex * _anglePerSlot);
         float finalRotation = targetAngle - (360f * minSpins);
@@ -66,10 +73,11 @@ public class WheelController : MonoBehaviour
         wheelRotator
             .DORotate(new Vector3(0, 0, finalRotation), spinDuration, RotateMode.FastBeyond360)
             .SetEase(spinEase)
-            .OnComplete(() => {
+            .OnComplete(() =>
+            {
                 IsSpinning = false;
 
-                if (targetIndex < _activeSlots.Count)
+                if (targetIndex >= 0 && targetIndex < _activeSlots.Count)
                 {
                     WheelEntry winningEntry = _activeSlots[targetIndex].EntryData;
                     onSpinComplete?.Invoke(winningEntry);

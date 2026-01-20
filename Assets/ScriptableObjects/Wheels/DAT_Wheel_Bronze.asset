@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: DAT_Wheel_Bronze
   m_EditorClassIdentifier: 
   WheelName: Bronze
+  WheelBackground: {fileID: 21300000, guid: 1ea27d4629f6d3849910eb61dc32fb71, type: 3}
+  WheelIndicator: {fileID: 21300000, guid: 3fb019677c368bc40bb3369f7635cbf8, type: 3}
   WheelEntries:
   - ItemData: {fileID: 11400000, guid: 5b95e7f098e331e438dd4b92dfe9166f, type: 2}
     Amount: 50

@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "DAT_ZoneSettings", menuName = "Game/ZoneSettings")]
 public class ZoneSettings : ScriptableObject
 {
+    public int TotalZones = 100;
+
     public int SafeZoneInterval = 5;
     public int SuperZoneInterval = 30;
 

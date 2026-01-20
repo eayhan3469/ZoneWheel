@@ -4,29 +4,29 @@ using UnityEngine;
 
 public class ZoneManager : MonoBehaviour
 {
+    [Header("Data")]
     [SerializeField] private ZoneSettings zoneSettings;
+
+    [Header("Controllers")]
     [SerializeField] private WheelController wheelController;
+    [SerializeField] private TapeController tapeController;
 
     private WheelData _currentWheelData;
-
-    public int CurrentZoneIndex { get; private set; } = 1;
+    private int _currentZone;
 
     private void Start()
     {
-        LoadZone(CurrentZoneIndex);
+        InitZone(1);
+        tapeController.Initialize(1, zoneSettings.TotalZones);
     }
 
-    public void LoadZone(int zoneIndex)
+    private void InitZone(int zoneIndex)
     {
-        CurrentZoneIndex = zoneIndex;
-        _currentWheelData = zoneSettings.GetWheelForZone(CurrentZoneIndex);
+        _currentZone = zoneIndex;
+        _currentWheelData = zoneSettings.GetWheelForZone(zoneIndex);
 
         wheelController.SetupWheel(_currentWheelData);
-    }
-
-    public void AdvanceToNextZone()
-    {
-        LoadZone(CurrentZoneIndex + 1);
+        tapeController.ScrollToZone(zoneIndex);
     }
 
     public void OnSpinButtonClicked()
@@ -34,30 +34,42 @@ public class ZoneManager : MonoBehaviour
         if (wheelController.IsSpinning)
             return;
 
-        int totalSlots = _currentWheelData.WheelEntries.Count;
-        int targetIndex = Random.Range(0, totalSlots); //TODO: Implement weighted random based on DropChance
+        int winnerIndex = PickRandomIndex();
 
-        wheelController.SpinTo(targetIndex, (earnedReward) =>
+        wheelController.SpinTo(winnerIndex, (result) =>
         {
-            HandleSpinResult(earnedReward);
+            OnSpinCompleted(result);
         });
     }
 
-    private void HandleSpinResult(WheelEntry reward)
+    private int PickRandomIndex()
     {
-        Debug.Log($"Sonuç Geldi: {reward.ItemData.DisplayName} x{reward.Amount}");
+        //TODO: Implement weighted random based on DropChance
+        return Random.Range(0, _currentWheelData.WheelEntries.Count);
+    }
 
-        if (reward.ItemData.Category == ItemCategory.Bomb)
+    private void OnSpinCompleted(WheelEntry result)
+    {
+        if (result == null)
+            return;
+
+        if (result.ItemData.Category == ItemCategory.Bomb)
         {
-            Debug.Log("<color=red>BOMB!. Game Over!</color>");
-            // TODO: Game Over UI aç
+            Debug.Log("<color=red>BOMBA! Oyun Bitti.</color>");
+            // TODO: Fail Screen
         }
         else
         {
-            Debug.Log("<color=green>Congrats.</color>");
-            // TODO: Ödülü envantere ekle
+            Debug.Log($"<color=green>KAZANDIN: {result.ItemData.DisplayName}</color>");
+            // TODO: Inventory Add
 
-            AdvanceToNextZone();
+            // Sonraki Level
+            Invoke(nameof(NextZone), 1f); // Biraz bekle sonra geç
         }
+    }
+
+    private void NextZone()
+    {
+        InitZone(_currentZone + 1);
     }
 }

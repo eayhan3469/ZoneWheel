@@ -7,7 +7,8 @@ using UnityEngine;
 public class WheelData : ScriptableObject
 {
     public string WheelName;
-    
+    public Sprite WheelBackground;
+    public Sprite WheelIndicator;
     public List<WheelEntry> WheelEntries;
 }
 
