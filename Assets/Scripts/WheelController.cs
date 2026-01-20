@@ -59,7 +59,7 @@ public class WheelController : MonoBehaviour
         wheelRotator.rotation = Quaternion.identity;
     }
 
-    public void SpinTo(int targetIndex, Action<WheelEntry> onSpinComplete)
+    public void SpinTo(int targetIndex, Action<WheelEntry, Transform> onSpinComplete)
     {
         if (IsSpinning)
             return;
@@ -67,7 +67,7 @@ public class WheelController : MonoBehaviour
         IsSpinning = true;
 
         // First slot is at the top (0 degreess)
-        float targetAngle = -(targetIndex * _anglePerSlot);
+        float targetAngle = targetIndex * _anglePerSlot;
         float finalRotation = targetAngle - (360f * minSpins);
 
         wheelRotator
@@ -80,12 +80,14 @@ public class WheelController : MonoBehaviour
                 if (targetIndex >= 0 && targetIndex < _activeSlots.Count)
                 {
                     WheelEntry winningEntry = _activeSlots[targetIndex].EntryData;
-                    onSpinComplete?.Invoke(winningEntry);
+                    Transform winningSlotTransform = _activeSlots[targetIndex].transform;
+
+                    onSpinComplete?.Invoke(winningEntry, winningSlotTransform);
                 }
                 else
                 {
                     Debug.LogError($"Target index {targetIndex} is out of range of active slots {_activeSlots.Count}");
-                    onSpinComplete?.Invoke(null);
+                    onSpinComplete?.Invoke(null, null);
                 }
             });
     }

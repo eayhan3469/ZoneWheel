@@ -17,9 +17,14 @@ public class ZoneManager : MonoBehaviour
     [SerializeField] private Button uiExitButton;
     [SerializeField] private GameObject uiRevivePanel;
 
+    [Header("Visual Feedback")]
+    [SerializeField] private RewardAnimator rewardAnimator;
+
     private WheelData _currentWheelData;
     private int _currentZoneIndex = 1;
     private bool _isGameActive = false;
+    private bool _isAnimating = false;
+
 
     private void Start()
     {
@@ -60,10 +65,11 @@ public class ZoneManager : MonoBehaviour
 
     public void OnSpinButtonClicked()
     {
-        if (!_isGameActive || wheelController.IsSpinning) return;
+        if (!_isGameActive || wheelController.IsSpinning || _isAnimating) 
+            return;
 
-        if (uiExitButton)
-            uiExitButton.interactable = false;
+        _isAnimating = true;
+        uiExitButton.interactable = false;
 
         //TODO : Add weightedRandom
         int winnerIndex = UnityEngine.Random.Range(0, _currentWheelData.WheelEntries.Count);
@@ -101,20 +107,24 @@ public class ZoneManager : MonoBehaviour
         _isGameActive = false;
     }
 
-    private void OnSpinCompleted(WheelEntry result)
+    private void OnSpinCompleted(WheelEntry result, Transform slotTransform)
     {
         if (result == null)
             return;
 
-        runManager.HandleReward(result);
-
         if (result.ItemData.Category == ItemCategory.Bomb)
         {
+            runManager.HandleReward(result);
             HandleGameOver();
         }
         else
         {
-            HandleSuccess();
+            rewardAnimator.PlayRewardAnimation(slotTransform.position, result.ItemData.Icon, () =>
+            {
+                runManager.HandleReward(result);
+                HandleSuccess();
+                _isAnimating = false;
+            });
         }
     }
 

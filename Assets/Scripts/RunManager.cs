@@ -14,16 +14,8 @@ public class RunManager : MonoBehaviour
 
     public void HandleReward(WheelEntry entry)
     {
-        if (entry.ItemData.Category == ItemCategory.Bomb)
-        {
-            Debug.Log("Bomb");
-            currentStash.Clear();
-        }
-        else
-        {
-            currentStash.AddItem(entry.ItemData, entry.Amount);
-            Debug.Log($"Added {entry.Amount} of {entry.ItemData.DisplayName} to stash.");
-        }
+        currentStash.AddItem(entry.ItemData, entry.Amount);
+        Debug.Log($"Added {entry.Amount} of {entry.ItemData.DisplayName} to stash.");
     }
 
     public void GiveUp()
