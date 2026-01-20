@@ -1,51 +1,104 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ZoneManager : MonoBehaviour
 {
-    [Header("Data")]
-    [SerializeField] private ZoneSettings zoneSettings;
+    [Header("Configuration")]
+    [SerializeField] private ZoneSettings zoneConfig;
 
-    [Header("Controllers")]
+    [Header("System References")]
     [SerializeField] private WheelController wheelController;
     [SerializeField] private TapeController tapeController;
+    [SerializeField] private RunManager runManager;
+
+    [Header("UI References")]
+    [SerializeField] private Button uiSpinButton;
+    [SerializeField] private Button uiExitButton;
+    [SerializeField] private GameObject uiRevivePanel;
 
     private WheelData _currentWheelData;
-    private int _currentZone;
+    private int _currentZoneIndex = 1;
+    private bool _isGameActive = false;
 
     private void Start()
     {
-        InitZone(1);
-        tapeController.Initialize(1, zoneSettings.TotalZones);
+        InitializeGame();
     }
 
-    private void InitZone(int zoneIndex)
+    public void InitializeGame()
     {
-        _currentZone = zoneIndex;
-        _currentWheelData = zoneSettings.GetWheelForZone(zoneIndex);
+        _currentZoneIndex = 1;
+        _isGameActive = true;
+
+        uiRevivePanel.SetActive(false);
+        runManager.StartNewRun();
+        tapeController.Initialize(_currentZoneIndex, zoneConfig.TotalZones);
+
+        LoadZone(_currentZoneIndex);
+    }
+
+    private void LoadZone(int index)
+    {
+        _currentZoneIndex = index;
+
+        _currentWheelData = zoneConfig.GetWheelForZone(_currentZoneIndex);
+        ZoneType zoneType = zoneConfig.GetZoneType(_currentZoneIndex);
 
         wheelController.SetupWheel(_currentWheelData);
-        tapeController.ScrollToZone(zoneIndex);
+
+        if (tapeController)
+            tapeController.ScrollToZone(_currentZoneIndex);
+
+        bool canExit = (zoneType == ZoneType.Safe || zoneType == ZoneType.Super);
+
+        if (uiExitButton)
+            uiExitButton.interactable = canExit;
+
+        Debug.Log($"--- ZONE {_currentZoneIndex} BAŞLADI ({zoneType}) ---");
     }
 
     public void OnSpinButtonClicked()
     {
-        if (wheelController.IsSpinning)
-            return;
+        if (!_isGameActive || wheelController.IsSpinning) return;
 
-        int winnerIndex = PickRandomIndex();
+        if (uiExitButton)
+            uiExitButton.interactable = false;
 
-        wheelController.SpinTo(winnerIndex, (result) =>
-        {
-            OnSpinCompleted(result);
-        });
+        //TODO : Add weightedRandom
+        int winnerIndex = UnityEngine.Random.Range(0, _currentWheelData.WheelEntries.Count);
+
+        wheelController.SpinTo(winnerIndex, OnSpinCompleted);
     }
 
-    private int PickRandomIndex()
+    public void OnExitButtonClicked()
     {
-        //TODO: Implement weighted random based on DropChance
-        return Random.Range(0, _currentWheelData.WheelEntries.Count);
+        if (!_isGameActive || wheelController.IsSpinning)
+            return;
+
+        Debug.Log("Leaving from run");
+        runManager.CashOut();
+
+        _isGameActive = false;
+    }
+
+    public void OnReviveButtonClicked()
+    {
+        Debug.Log("Revived!");
+
+        uiRevivePanel.SetActive(false);
+        _isGameActive = true;
+
+        StartCoroutine(WaitAndAdvanceRoutine(0.5f));
+    }
+
+    public void OnGiveUpButtonClicked()
+    {
+        Debug.Log("Given up!");
+        uiRevivePanel.SetActive(false);
+
+        runManager.GiveUp();
+        _isGameActive = false;
     }
 
     private void OnSpinCompleted(WheelEntry result)
@@ -53,23 +106,37 @@ public class ZoneManager : MonoBehaviour
         if (result == null)
             return;
 
+        runManager.HandleReward(result);
+
         if (result.ItemData.Category == ItemCategory.Bomb)
         {
-            Debug.Log("<color=red>BOMBA! Oyun Bitti.</color>");
-            // TODO: Fail Screen
+            HandleGameOver();
         }
         else
         {
-            Debug.Log($"<color=green>KAZANDIN: {result.ItemData.DisplayName}</color>");
-            // TODO: Inventory Add
-
-            // Sonraki Level
-            Invoke(nameof(NextZone), 1f); // Biraz bekle sonra ge�
+            HandleSuccess();
         }
     }
 
-    private void NextZone()
+    private void HandleSuccess()
     {
-        InitZone(_currentZone + 1);
+        // Başarılı ses efekti vs.
+        StartCoroutine(WaitAndAdvanceRoutine(1.0f));
+    }
+
+    private void HandleGameOver()
+    {
+        Debug.Log("<color=red>GAME OVER!</color>");
+        _isGameActive = false;
+
+        if (uiRevivePanel)
+            uiRevivePanel.SetActive(true);
+    }
+
+    private IEnumerator WaitAndAdvanceRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        LoadZone(_currentZoneIndex + 1);
     }
 }

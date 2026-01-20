@@ -258,8 +258,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4956894716946027916}
   - component: {fileID: 1423211825781458661}
+  - component: {fileID: 2400314727411503765}
   m_Layer: 5
-  m_Name: UI_Item_Reward_Row
+  m_Name: UI_Item_Stash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -313,3 +314,17 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &2400314727411503765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4956894716946027917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8d9974093ee7c44a92cd5328c559847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  iconImage: {fileID: 4956894716184478007}
+  amountText: {fileID: 4956894716244203937}
