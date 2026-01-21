@@ -1,0 +1,950 @@
+
+==================================================
+DOSYA YOLU: CollectedItem.cs
+==================================================
+
+using System;
+
+[Serializable]
+public class CollectedItem
+{
+    public ItemData Data;
+    public int Amount;
+
+    public CollectedItem(ItemData data, int amount)
+    {
+        Data = data;
+        Amount = amount;
+    }
+}
+
+
+==================================================
+DOSYA YOLU: RewardAnimator.cs
+==================================================
+
+using DG.Tweening;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class RewardAnimator : MonoBehaviour
+{
+    [SerializeField] private GameObject flyingRewardPrefab;
+    [SerializeField] private RectTransform targetStashUI;
+
+    [SerializeField] private float duration = 0.8f;
+    [SerializeField] private Ease moveEase = Ease.InBack;
+
+    public void PlayRewardAnimation(Vector3 startPosition, Sprite iconSprite, Action onAnimationComplete)
+    {
+        GameObject flyingObj = Instantiate(flyingRewardPrefab, transform.root);
+
+        flyingObj.transform.position = startPosition;
+
+        Image img = flyingObj.GetComponent<Image>();
+        img.sprite = iconSprite;
+
+        Sequence seq = DOTween.Sequence();
+
+        flyingObj.transform.localScale = Vector3.zero;
+        seq.Append(flyingObj.transform.DOScale(2f, 0.3f).SetEase(Ease.OutBack));
+        seq.Append(flyingObj.transform.DOMove(targetStashUI.position, duration).SetEase(moveEase)).SetDelay(0.2f);
+        seq.Insert(1.2f, flyingObj.transform.DOScale(0f, 0.2f));
+
+        seq.OnComplete(() =>
+        {
+            Destroy(flyingObj);
+            onAnimationComplete?.Invoke();
+        });
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Stash.cs
+==================================================
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+[Serializable]
+public class Stash
+{
+    [SerializeField] private List<CollectedItem> items = new List<CollectedItem>();
+
+    public event Action<List<CollectedItem>, CollectedItem> OnStashUpdated;
+    public event Action OnStashCleared;
+
+
+    public void AddItem(ItemData itemData, int amount)
+    {
+        var existingItem = items.FirstOrDefault(i => i.Data == itemData);
+
+        if (existingItem != null)
+        {
+            existingItem.Amount += amount;
+
+            OnStashUpdated?.Invoke(items, existingItem);
+        }
+        else
+        {
+            var newItem = new CollectedItem(itemData, amount);
+            items.Add(newItem);
+
+            OnStashUpdated?.Invoke(items, newItem);
+        }
+    }
+
+    public void Clear()
+    {
+        items.Clear();
+        OnStashCleared?.Invoke();
+    }
+
+    public List<CollectedItem> GetItems()
+    {
+        return items;
+    }
+
+    public bool IsEmpty()
+    {
+        return items.Count == 0;
+    }
+}
+
+
+==================================================
+DOSYA YOLU: WheelSlot.cs
+==================================================
+
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class WheelSlot : MonoBehaviour
+{
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TextMeshProUGUI amountText;
+
+    public WheelEntry EntryData { get; private set; }
+
+    private Quaternion _fixedRotation = Quaternion.identity;
+
+    public void Setup(WheelEntry entry)
+    {
+        EntryData = entry;
+
+        iconImage.sprite = entry.ItemData.Icon;
+        amountText.text = entry.Amount.ToString();
+    }
+
+    private void LateUpdate()
+    {
+        transform.rotation = _fixedRotation;
+    }
+}
+
+
+==================================================
+DOSYA YOLU: ZoneNumberView.cs
+==================================================
+
+﻿using UnityEngine;
+using TMPro;
+
+public class ZoneNumberView : MonoBehaviour
+{
+    [SerializeField] private TextMeshProUGUI numberText;
+
+    public void Setup(int number, Color typeColor)
+    {
+        numberText.text = number.ToString();
+        numberText.color = typeColor;
+    }
+}
+
+==================================================
+DOSYA YOLU: Controllers\TapeController.cs
+==================================================
+
+﻿using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
+
+public class TapeController : MonoBehaviour
+{
+    [Header("UI References")]
+    [SerializeField] private RectTransform contentRect;
+    [SerializeField] private HorizontalLayoutGroup layoutGroup;
+    [SerializeField] private RectTransform viewportRect;
+
+    [Header("Prefab Settings")]
+    [SerializeField] private ZoneNumberView zoneNumberPrefab;
+    [SerializeField] private float itemWidth = 45f;
+
+    private float _stepSize;
+
+    public void Initialize(int startZone, int totalZones)
+    {
+        foreach (Transform child in contentRect)
+            Destroy(child.gameObject);
+
+        float centerOffset = (viewportRect.rect.width / 2f) - (itemWidth / 2f);
+        layoutGroup.padding.left = Mathf.RoundToInt(centerOffset);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+
+        _stepSize = itemWidth + layoutGroup.spacing;
+
+        for (int i = 1; i <= totalZones; i++)
+        {
+            var zoneView = Instantiate(zoneNumberPrefab, contentRect);
+
+            if (i % 30 == 0)
+                zoneView.Setup(i, Color.yellow); // Super Zone
+            else if (i % 5 == 0)
+                zoneView.Setup(i, Color.green); // Safe Zone
+            else
+                zoneView.Setup(i, Color.white);
+        }
+
+        ScrollToZone(startZone);
+    }
+
+    public void ScrollToZone(int zoneNumber)
+    {
+        if (zoneNumber < 1)
+            zoneNumber = 1;
+
+        int targetIndex = zoneNumber - 1;
+        float targetX = -1 * (targetIndex * _stepSize);
+
+        contentRect.DOKill();
+        contentRect.DOAnchorPosX(targetX, 0.5f).SetEase(Ease.OutBack);
+
+        Debug.Log($"<color=cyan>UI:</color> Zone {zoneNumber} noktasına kaydırıldı.");
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Controllers\WheelController.cs
+==================================================
+
+using DG.Tweening;
+using Subtegral.WeightedRandom;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class WheelController : MonoBehaviour
+{
+    [SerializeField] private Transform wheelRotator;
+    [SerializeField] private Image wheelBackgroundImage;
+    [SerializeField] private Image wheelIndicatorImage;
+
+    [Header("Animation Settings")]
+    [SerializeField] private float spinDuration = 4f;
+    [SerializeField] private int minSpins = 5;
+    [SerializeField] private Ease spinEase = Ease.OutQuart;
+
+    private List<WheelSlot> _activeSlots = new List<WheelSlot>();
+    private float _anglePerSlot;
+
+    public bool IsSpinning { get; private set; } = false;
+    public WeightedRandom<int> Random { get; private set; }
+
+    public void SetupWheel(WheelData wheelData)
+    {
+        Random = new WeightedRandom<int>();
+
+        wheelBackgroundImage.sprite = wheelData.WheelBackground;
+        wheelIndicatorImage.sprite = wheelData.WheelIndicator;
+
+        WheelSlot[] existingSlots = wheelRotator.GetComponentsInChildren<WheelSlot>(true);
+
+        if (existingSlots.Length == 0)
+        {
+            Debug.LogError("Couldn't found any 'WheelSlot'");
+            return;
+        }
+
+        _activeSlots.Clear();
+
+        if (wheelData.WheelEntries.Count != existingSlots.Length)
+        {
+            Debug.LogError($"Wheel Data entries count ({wheelData.WheelEntries.Count}) does not match the existing slots count ({existingSlots.Length})");
+            return;
+        }
+
+        for (int i = 0; i < existingSlots.Length; i++)
+        {
+            WheelSlot slot = existingSlots[i];
+            WheelEntry data = wheelData.WheelEntries[i];
+            Random.Add(i, data.DropChance);
+
+            slot.gameObject.SetActive(true);
+            slot.Setup(data);
+            _activeSlots.Add(slot);
+        }
+
+        if (existingSlots.Length > 0)
+            _anglePerSlot = 360f / existingSlots.Length;
+
+        wheelRotator.rotation = Quaternion.identity;
+    }
+
+    public void SpinTo(int targetIndex, Action<WheelEntry, Transform> onSpinComplete)
+    {
+        if (IsSpinning)
+            return;
+
+        IsSpinning = true;
+
+        // First slot is at the top (0 degreess)
+        float targetAngle = targetIndex * _anglePerSlot;
+        float finalRotation = targetAngle - (360f * minSpins);
+
+        wheelRotator
+            .DORotate(new Vector3(0, 0, finalRotation), spinDuration, RotateMode.FastBeyond360)
+            .SetEase(spinEase)
+            .OnComplete(() =>
+            {
+                IsSpinning = false;
+
+                if (targetIndex >= 0 && targetIndex < _activeSlots.Count)
+                {
+                    WheelEntry winningEntry = _activeSlots[targetIndex].EntryData;
+                    Transform winningSlotTransform = _activeSlots[targetIndex].transform;
+
+                    onSpinComplete?.Invoke(winningEntry, winningSlotTransform);
+                }
+                else
+                {
+                    Debug.LogError($"Target index {targetIndex} is out of range of active slots {_activeSlots.Count}");
+                    onSpinComplete?.Invoke(null, null);
+                }
+            });
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Data\ItemData.cs
+==================================================
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "DAT_Item_", menuName = "Game/Item Data")]
+public class ItemData : ScriptableObject
+{
+    public string DisplayName;
+    public Sprite Icon;
+    public ItemCategory Category;
+}
+
+public enum ItemCategory : byte
+{
+    Coin,
+    Gold,
+    Weapon,
+    Armor,
+    Bomb
+}
+
+==================================================
+DOSYA YOLU: Data\WheelData.cs
+==================================================
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "DAT_Wheel_", menuName = "Game/WheelData", order = 1)]
+public class WheelData : ScriptableObject
+{
+    public string WheelName;
+    public Sprite WheelBackground;
+    public Sprite WheelIndicator;
+    public List<WheelEntry> WheelEntries;
+}
+
+public enum WheelType : byte
+{
+    Bronze,
+    Silver,
+    Gold
+}
+
+[Serializable]
+public class WheelEntry
+{
+    public ItemData ItemData;
+    public int Amount;
+    [Range(0, 100)] public int DropChance;
+}
+
+
+==================================================
+DOSYA YOLU: Data\ZoneSettings.cs
+==================================================
+
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "DAT_ZoneSettings", menuName = "Game/ZoneSettings")]
+public class ZoneSettings : ScriptableObject
+{
+    public int TotalZones = 100;
+
+    public int SafeZoneInterval = 5;
+    public int SuperZoneInterval = 30;
+
+    public WheelData StandartWheel;
+    public WheelData SafeZoneWheel;
+    public WheelData SuperZoneWheel;
+
+    public WheelData GetWheelForZone(int zoneIndex)
+    {
+        if (zoneIndex % SuperZoneInterval == 0)
+            return SuperZoneWheel;
+
+        if (zoneIndex % SafeZoneInterval == 0)
+            return SafeZoneWheel;
+
+        return StandartWheel;
+    }
+
+    public ZoneType GetZoneType(int zoneIndex)
+    {
+        if (zoneIndex % SuperZoneInterval == 0)
+            return ZoneType.Super;
+
+        if (zoneIndex % SafeZoneInterval == 0)
+            return ZoneType.Safe;
+
+        return ZoneType.Standard;
+    }
+}
+
+
+public enum ZoneType
+{
+    Standard,
+    Safe,
+    Super
+}
+
+==================================================
+DOSYA YOLU: Data\Editor\WheelDataEditor.cs
+==================================================
+
+﻿using UnityEditor;
+using UnityEngine;
+
+[CustomEditor(typeof(WheelData))]
+public class WheelDataEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("WheelName"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("WheelBackground"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("WheelIndicator"));
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Wheel Entries (Auto-Balance: 100%)", EditorStyles.boldLabel);
+
+        SerializedProperty entriesProp = serializedObject.FindProperty("WheelEntries");
+
+        for (int i = 0; i < entriesProp.arraySize; i++)
+        {
+            SerializedProperty entry = entriesProp.GetArrayElementAtIndex(i);
+            SerializedProperty itemData = entry.FindPropertyRelative("ItemData");
+            SerializedProperty amount = entry.FindPropertyRelative("Amount");
+            SerializedProperty dropChance = entry.FindPropertyRelative("DropChance");
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            string header = itemData.objectReferenceValue != null ? (itemData.objectReferenceValue as ItemData).DisplayName : $"Element {i}";
+
+            EditorGUILayout.LabelField(header, EditorStyles.miniBoldLabel);
+
+            EditorGUILayout.PropertyField(itemData);
+            EditorGUILayout.PropertyField(amount);
+
+            EditorGUI.BeginChangeCheck();
+
+            int oldVal = dropChance.intValue;
+            int newVal = EditorGUILayout.IntSlider("Drop Chance (%)", oldVal, 0, 100);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                dropChance.intValue = newVal;
+                BalanceProportionally(entriesProp, i, newVal);
+            }
+
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space(2);
+        }
+
+        if (GUILayout.Button("Add Wheel Entry"))
+            entriesProp.InsertArrayElementAtIndex(entriesProp.arraySize);
+
+        if (GUILayout.Button("Remove Last Entry") && entriesProp.arraySize > 0)
+            entriesProp.DeleteArrayElementAtIndex(entriesProp.arraySize - 1);
+
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void BalanceProportionally(SerializedProperty list, int changedIndex, int newValue)
+    {
+        int totalCount = list.arraySize;
+        if (totalCount <= 1) 
+            return;
+
+        int targetRemaining = 100 - newValue;
+        float currentOthersTotal = 0f;
+
+        for (int k = 0; k < totalCount; k++)
+        {
+            if (k == changedIndex)
+                continue;
+
+            currentOthersTotal += list.GetArrayElementAtIndex(k).FindPropertyRelative("DropChance").intValue;
+        }
+
+        int accumulated = 0;
+
+        bool useEqualDistribution = (currentOthersTotal == 0);
+
+        for (int k = 0; k < totalCount; k++)
+        {
+            if (k == changedIndex) 
+                continue;
+
+            SerializedProperty prop = list.GetArrayElementAtIndex(k).FindPropertyRelative("DropChance");
+            int newVal = 0;
+
+            if (useEqualDistribution)
+            {
+                newVal = targetRemaining / (totalCount - 1);
+            }
+            else
+            {
+                float ratio = (float)prop.intValue / currentOthersTotal;
+                newVal = Mathf.RoundToInt(targetRemaining * ratio);
+            }
+
+            prop.intValue = newVal;
+            accumulated += newVal;
+        }
+
+        int error = targetRemaining - accumulated;
+
+        if (error != 0)
+        {
+            int bestCandidateIndex = -1;
+            int maxVal = -1;
+
+            for (int k = 0; k < totalCount; k++)
+            {
+                if (k == changedIndex) 
+                    continue;
+
+                int val = list.GetArrayElementAtIndex(k).FindPropertyRelative("DropChance").intValue;
+                if (val > maxVal)
+                {
+                    maxVal = val;
+                    bestCandidateIndex = k;
+                }
+            }
+
+            if (bestCandidateIndex != -1)
+            {
+                SerializedProperty fixProp = list.GetArrayElementAtIndex(bestCandidateIndex).FindPropertyRelative("DropChance");
+
+                if (fixProp.intValue + error >= 0)
+                    fixProp.intValue += error;
+                else
+                    list.GetArrayElementAtIndex(changedIndex).FindPropertyRelative("DropChance").intValue += error;
+            }
+        }
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Helpers\FortuneWheelSlotPlacer.cs
+==================================================
+
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+public class FortuneWheelSlotPlacer : MonoBehaviour
+{
+    [SerializeField] private GameObject slotPrefab;
+    [SerializeField] private int numberOfSlots = 8;
+    [SerializeField] private float radius = 250f;
+    [SerializeField] private float startAngleOffset = 90f;
+    [SerializeField] private List<GameObject> createdSlots = new List<GameObject>();
+
+    [ContextMenu("Generate Slots")]
+    public void GenerateSlots()
+    {
+        ClearSlots();
+
+        float angleStep = 360f / numberOfSlots;
+
+        for (int i = 0; i < numberOfSlots; i++)
+        {
+            float currentAngleDegrees = startAngleOffset - (i * angleStep);
+            float currentAngleRad = currentAngleDegrees * Mathf.Deg2Rad;
+
+            float x = Mathf.Cos(currentAngleRad) * radius;
+            float y = Mathf.Sin(currentAngleRad) * radius;
+            Vector3 position = new Vector3(x, y, 0);
+
+            GameObject slotObj = Instantiate(slotPrefab, transform);
+            slotObj.name = $"UI_Slot_{i}";
+
+            RectTransform rect = slotObj.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.anchoredPosition = position;
+            }
+            else
+            {
+                slotObj.transform.localPosition = position;
+            }
+
+            createdSlots.Add(slotObj);
+        }
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            EditorUtility.SetDirty(this);
+        }
+#endif
+        Debug.Log($"<color=green>{numberOfSlots} slot successfully placed.</color>");
+    }
+
+    [ContextMenu("Clear Slots")]
+    public void ClearSlots()
+    {
+        foreach (var slot in createdSlots)
+        {
+            if (slot != null)
+            {
+                if (Application.isPlaying) 
+                    Destroy(slot);
+                else
+                    DestroyImmediate(slot);
+            }
+        }
+        createdSlots.Clear();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, radius);
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Managers\RunManager.cs
+==================================================
+
+﻿using UnityEditorInternal;
+using UnityEngine;
+
+public class RunManager : MonoBehaviour
+{
+    [SerializeField] private Stash currentStash = new Stash();
+
+    public Stash Stash => currentStash;
+
+    public void StartNewRun()
+    {
+        currentStash.Clear();
+    }
+
+    public void HandleReward(WheelEntry entry)
+    {
+        currentStash.AddItem(entry.ItemData, entry.Amount);
+        Debug.Log($"Added {entry.Amount} of {entry.ItemData.DisplayName} to stash.");
+    }
+
+    public void GiveUp()
+    {
+        Debug.Log("Given up! Clearing stash.");
+        currentStash.Clear();
+    }
+
+    public void CashOut()
+    {
+        if (currentStash.IsEmpty())
+            return;
+
+        Debug.Log("Rewards earned moving to inventory");
+
+        currentStash.Clear();
+    }
+}
+
+
+==================================================
+DOSYA YOLU: Managers\ZoneManager.cs
+==================================================
+
+﻿using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ZoneManager : MonoBehaviour
+{
+    [Header("Configuration")]
+    [SerializeField] private ZoneSettings zoneConfig;
+
+    [Header("System References")]
+    [SerializeField] private WheelController wheelController;
+    [SerializeField] private TapeController tapeController;
+    [SerializeField] private RunManager runManager;
+
+    [Header("UI References")]
+    [SerializeField] private Button uiSpinButton;
+    [SerializeField] private Button uiExitButton;
+    [SerializeField] private GameObject uiRevivePanel;
+
+    [Header("Visual Feedback")]
+    [SerializeField] private RewardAnimator rewardAnimator;
+
+    private WheelData _currentWheelData;
+    private int _currentZoneIndex = 1;
+    private bool _isGameActive = false;
+    private bool _isAnimating = false;
+
+
+    private void Start()
+    {
+        InitializeGame();
+    }
+
+    public void InitializeGame()
+    {
+        _currentZoneIndex = 1;
+        _isGameActive = true;
+
+        uiRevivePanel.SetActive(false);
+        runManager.StartNewRun();
+        tapeController.Initialize(_currentZoneIndex, zoneConfig.TotalZones);
+
+        LoadZone(_currentZoneIndex);
+    }
+
+    private void LoadZone(int index)
+    {
+        _currentZoneIndex = index;
+
+        _currentWheelData = zoneConfig.GetWheelForZone(_currentZoneIndex);
+        ZoneType zoneType = zoneConfig.GetZoneType(_currentZoneIndex);
+
+        wheelController.SetupWheel(_currentWheelData);
+
+        if (tapeController)
+            tapeController.ScrollToZone(_currentZoneIndex);
+
+        bool canExit = (zoneType == ZoneType.Safe || zoneType == ZoneType.Super);
+
+        if (uiExitButton)
+            uiExitButton.interactable = canExit;
+
+        Debug.Log($"--- ZONE {_currentZoneIndex} BAŞLADI ({zoneType}) ---");
+    }
+
+    public void OnSpinButtonClicked()
+    {
+        if (!_isGameActive || wheelController.IsSpinning || _isAnimating)
+            return;
+
+        _isAnimating = true;
+        uiExitButton.interactable = false;
+
+        //TODO : Add weightedRandom
+        int winnerIndex = wheelController.Random.Next();
+
+        wheelController.SpinTo(winnerIndex, OnSpinCompleted);
+    }
+
+    public void OnExitButtonClicked()
+    {
+        if (!_isGameActive || wheelController.IsSpinning)
+            return;
+
+        Debug.Log("Leaving from run");
+        runManager.CashOut();
+
+        _isGameActive = false;
+
+        ResetZone();
+    }
+
+    public void OnReviveButtonClicked()
+    {
+        Debug.Log("Revived!");
+
+        uiRevivePanel.SetActive(false);
+        _isGameActive = true;
+
+        StartCoroutine(WaitAndAdvanceRoutine(0.5f));
+    }
+
+    public void OnGiveUpButtonClicked()
+    {
+        Debug.Log("Given up!");
+        uiRevivePanel.SetActive(false);
+
+        runManager.GiveUp();
+        _isGameActive = false;
+
+        ResetZone();
+    }
+
+    private void ResetZone()
+    {
+        _currentZoneIndex = 1;
+        LoadZone(_currentZoneIndex);
+    }
+
+    private void OnSpinCompleted(WheelEntry result, Transform slotTransform)
+    {
+        if (result == null)
+            return;
+
+        if (result.ItemData.Category == ItemCategory.Bomb)
+        {
+            HandleGameOver();
+            _isAnimating = false;
+        }
+        else
+        {
+            rewardAnimator.PlayRewardAnimation(slotTransform.position, result.ItemData.Icon, () =>
+            {
+                runManager.HandleReward(result);
+                HandleSuccess();
+                _isAnimating = false;
+            });
+        }
+    }
+
+    private void HandleSuccess()
+    {
+        // Başarılı ses efekti vs.
+        StartCoroutine(WaitAndAdvanceRoutine(1.0f));
+    }
+
+    private void HandleGameOver()
+    {
+        Debug.Log("<color=red>GAME OVER!</color>");
+        _isGameActive = false;
+
+        if (uiRevivePanel)
+            uiRevivePanel.SetActive(true);
+    }
+
+    private IEnumerator WaitAndAdvanceRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        LoadZone(_currentZoneIndex + 1);
+    }
+}
+
+
+==================================================
+DOSYA YOLU: UI\UIStashController.cs
+==================================================
+
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public class UIStashController : MonoBehaviour
+{
+    [SerializeField] private RunManager runManager;
+
+    [SerializeField] private Transform contentParent;
+    [SerializeField] private UIStashItem stashItemPrefab;
+
+    private List<UIStashItem> _spawnedItems = new List<UIStashItem>();
+
+    private void Start()
+    {
+        runManager.Stash.OnStashUpdated += RefreshUI;
+        runManager.Stash.OnStashCleared += ClearUI;
+    }
+
+    private void RefreshUI(List<CollectedItem> allItems, CollectedItem lastUpdated)
+    {
+        //TODO: Optimize this to not clear and respawn everything
+        ClearUI();
+
+        foreach (var item in allItems)
+        {
+            UIStashItem uiItem = Instantiate(stashItemPrefab, contentParent);
+            uiItem.Setup(item.Data.Icon, item.Amount);
+            _spawnedItems.Add(uiItem);
+        }
+    }
+
+    private void ClearUI()
+    {
+        foreach (Transform child in contentParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        _spawnedItems.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        runManager.Stash.OnStashUpdated -= RefreshUI;
+        runManager.Stash.OnStashCleared -= ClearUI;
+    }
+}
+
+
+==================================================
+DOSYA YOLU: UI\UIStashItem.cs
+==================================================
+
+﻿using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UIStashItem : MonoBehaviour
+{
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TextMeshProUGUI amountText;
+
+    public void Setup(Sprite icon, int amount)
+    {
+        iconImage.sprite = icon;
+        amountText.text = amount.ToString();
+    }
+}

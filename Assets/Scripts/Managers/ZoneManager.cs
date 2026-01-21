@@ -113,8 +113,7 @@ public class ZoneManager : MonoBehaviour
 
     private void ResetZone()
     {
-        _currentZoneIndex = 1;
-        LoadZone(_currentZoneIndex);
+        InitializeGame();
     }
 
     private void OnSpinCompleted(WheelEntry result, Transform slotTransform)
