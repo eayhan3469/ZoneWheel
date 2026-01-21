@@ -16,13 +16,13 @@ public class ZoneManager : MonoBehaviour
     [SerializeField] private Button uiSpinButton;
     [SerializeField] private Button uiExitButton;
     [SerializeField] private GameObject uiRevivePanel;
+    [SerializeField] private UIGameOverPanel uiWinPanel;
 
     [Header("Visual Feedback")]
     [SerializeField] private RewardAnimator rewardAnimator;
 
     private WheelData _currentWheelData;
     private int _currentZoneIndex = 1;
-    private bool _isGameActive = false;
     private bool _isAnimating = false;
 
 
@@ -34,7 +34,6 @@ public class ZoneManager : MonoBehaviour
     public void InitializeGame()
     {
         _currentZoneIndex = 1;
-        _isGameActive = true;
 
         uiRevivePanel.SetActive(false);
         runManager.StartNewRun();
@@ -52,20 +51,17 @@ public class ZoneManager : MonoBehaviour
 
         wheelController.SetupWheel(_currentWheelData);
 
-        if (tapeController)
-            tapeController.ScrollToZone(_currentZoneIndex);
+        tapeController.ScrollToZone(_currentZoneIndex, () => { _isAnimating = false; });
 
         bool canExit = (zoneType == ZoneType.Safe || zoneType == ZoneType.Super);
 
         if (uiExitButton)
             uiExitButton.interactable = canExit;
-
-        Debug.Log($"--- ZONE {_currentZoneIndex} BAŞLADI ({zoneType}) ---");
     }
 
     public void OnSpinButtonClicked()
     {
-        if (!_isGameActive || wheelController.IsSpinning || _isAnimating)
+        if (wheelController.IsSpinning || _isAnimating)
             return;
 
         _isAnimating = true;
@@ -79,23 +75,22 @@ public class ZoneManager : MonoBehaviour
 
     public void OnExitButtonClicked()
     {
-        if (!_isGameActive || wheelController.IsSpinning)
+        if (wheelController.IsSpinning)
             return;
 
-        Debug.Log("Leaving from run");
-        runManager.CashOut();
+        var collectedItems = runManager.Stash.GetItems();
 
-        _isGameActive = false;
+        uiWinPanel.Show(collectedItems, () =>
+        {
+            runManager.StartNewRun();
 
-        ResetZone();
+            ResetZone();
+        });
     }
 
     public void OnReviveButtonClicked()
     {
-        Debug.Log("Revived!");
-
         uiRevivePanel.SetActive(false);
-        _isGameActive = true;
 
         StartCoroutine(WaitAndAdvanceRoutine(0.5f));
     }
@@ -106,7 +101,6 @@ public class ZoneManager : MonoBehaviour
         uiRevivePanel.SetActive(false);
 
         runManager.GiveUp();
-        _isGameActive = false;
 
         ResetZone();
     }
@@ -132,22 +126,17 @@ public class ZoneManager : MonoBehaviour
             {
                 runManager.HandleReward(result);
                 HandleSuccess();
-                _isAnimating = false;
             });
         }
     }
 
     private void HandleSuccess()
     {
-        // Başarılı ses efekti vs.
-        StartCoroutine(WaitAndAdvanceRoutine(1.0f));
+        StartCoroutine(WaitAndAdvanceRoutine(0.2f));
     }
 
     private void HandleGameOver()
     {
-        Debug.Log("<color=red>GAME OVER!</color>");
-        _isGameActive = false;
-
         if (uiRevivePanel)
             uiRevivePanel.SetActive(true);
     }

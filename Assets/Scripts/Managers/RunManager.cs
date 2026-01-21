@@ -23,14 +23,4 @@ public class RunManager : MonoBehaviour
         Debug.Log("Given up! Clearing stash.");
         currentStash.Clear();
     }
-
-    public void CashOut()
-    {
-        if (currentStash.IsEmpty())
-            return;
-
-        Debug.Log("Rewards earned moving to inventory");
-
-        currentStash.Clear();
-    }
 }

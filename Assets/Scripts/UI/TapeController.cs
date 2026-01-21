@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
+using System;
 
 public class TapeController : MonoBehaviour
 {
@@ -41,7 +42,7 @@ public class TapeController : MonoBehaviour
         ScrollToZone(startZone);
     }
 
-    public void ScrollToZone(int zoneNumber)
+    public void ScrollToZone(int zoneNumber, Action onComplete = null)
     {
         if (zoneNumber < 1)
             zoneNumber = 1;
@@ -50,8 +51,6 @@ public class TapeController : MonoBehaviour
         float targetX = -1 * (targetIndex * _stepSize);
 
         contentRect.DOKill();
-        contentRect.DOAnchorPosX(targetX, 0.5f).SetEase(Ease.OutBack);
-
-        Debug.Log($"<color=cyan>UI:</color> Zone {zoneNumber} noktasına kaydırıldı.");
+        contentRect.DOAnchorPosX(targetX, 0.25f).SetEase(Ease.OutBack).OnComplete(()=> onComplete?.Invoke());
     }
 }
