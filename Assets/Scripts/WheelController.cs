@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Subtegral.WeightedRandom;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,14 +21,16 @@ public class WheelController : MonoBehaviour
     private float _anglePerSlot;
 
     public bool IsSpinning { get; private set; } = false;
+    public WeightedRandom<int> Random { get; private set; }
 
     public void SetupWheel(WheelData wheelData)
     {
+        Random = new WeightedRandom<int>();
+
         wheelBackgroundImage.sprite = wheelData.WheelBackground;
         wheelIndicatorImage.sprite = wheelData.WheelIndicator;
 
         WheelSlot[] existingSlots = wheelRotator.GetComponentsInChildren<WheelSlot>(true);
-
 
         if (existingSlots.Length == 0)
         {
@@ -47,6 +50,7 @@ public class WheelController : MonoBehaviour
         {
             WheelSlot slot = existingSlots[i];
             WheelEntry data = wheelData.WheelEntries[i];
+            Random.Add(i, data.DropChance);
 
             slot.gameObject.SetActive(true);
             slot.Setup(data);

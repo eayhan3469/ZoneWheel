@@ -65,14 +65,14 @@ public class ZoneManager : MonoBehaviour
 
     public void OnSpinButtonClicked()
     {
-        if (!_isGameActive || wheelController.IsSpinning || _isAnimating) 
+        if (!_isGameActive || wheelController.IsSpinning || _isAnimating)
             return;
 
         _isAnimating = true;
         uiExitButton.interactable = false;
 
         //TODO : Add weightedRandom
-        int winnerIndex = UnityEngine.Random.Range(0, _currentWheelData.WheelEntries.Count);
+        int winnerIndex = wheelController.Random.Next();
 
         wheelController.SpinTo(winnerIndex, OnSpinCompleted);
     }
@@ -86,6 +86,8 @@ public class ZoneManager : MonoBehaviour
         runManager.CashOut();
 
         _isGameActive = false;
+
+        ResetZone();
     }
 
     public void OnReviveButtonClicked()
@@ -105,6 +107,14 @@ public class ZoneManager : MonoBehaviour
 
         runManager.GiveUp();
         _isGameActive = false;
+
+        ResetZone();
+    }
+
+    private void ResetZone()
+    {
+        _currentZoneIndex = 1;
+        LoadZone(_currentZoneIndex);
     }
 
     private void OnSpinCompleted(WheelEntry result, Transform slotTransform)
@@ -114,8 +124,8 @@ public class ZoneManager : MonoBehaviour
 
         if (result.ItemData.Category == ItemCategory.Bomb)
         {
-            runManager.HandleReward(result);
             HandleGameOver();
+            _isAnimating = false;
         }
         else
         {
