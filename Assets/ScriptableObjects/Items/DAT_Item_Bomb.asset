@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Bomb
   Icon: {fileID: 21300000, guid: f0f72f36a89a49d448c11615135274ae, type: 3}
-  Category: 4
+  Category: 6

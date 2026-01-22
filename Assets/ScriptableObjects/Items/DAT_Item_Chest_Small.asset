@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Small Chest
   Icon: {fileID: 21300000, guid: 460eaa290c069404fa4aca0bdc3c2362, type: 3}
+  Category: 5

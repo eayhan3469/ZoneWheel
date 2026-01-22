@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Regenerator
   Icon: {fileID: 21300000, guid: 489932c51907ae740bddb560b0b38abb, type: 3}
+  Category: 3

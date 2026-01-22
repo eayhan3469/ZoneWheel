@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(RunManager))]
 public class ZoneManager : MonoBehaviour
 {
     [Header("Configuration")]
@@ -10,42 +13,45 @@ public class ZoneManager : MonoBehaviour
     [Header("System References")]
     [SerializeField] private WheelController wheelController;
     [SerializeField] private TapeController tapeController;
-    [SerializeField] private RunManager runManager;
-
-    [Header("UI References")]
-    [SerializeField] private Button uiSpinButton;
-    [SerializeField] private Button uiExitButton;
-    [SerializeField] private GameObject uiRevivePanel;
-    [SerializeField] private UIGameOverPanel uiWinPanel;
 
     [Header("Visual Feedback")]
     [SerializeField] private RewardAnimator rewardAnimator;
 
+    public event Action OnSpinStarted;
+    public event Action<bool> OnZoneLoaded;
+    public event Action<WheelEntry> OnRewardEarned;
+    public event Action OnGameOver;
+    public event Action<List<CollectedItem>> OnGameWin;
+
+    private RunManager _runManager;
     private WheelData _currentWheelData;
     private int _currentZoneIndex = 1;
     private bool _isAnimating = false;
 
+    private void Awake()
+    {
+        Application.targetFrameRate = 60;
+        Debug.unityLogger.logEnabled = false;
+    }
 
     private void Start()
     {
+        _runManager = GetComponent<RunManager>();
+
         InitializeGame();
     }
 
     public void InitializeGame()
     {
         _currentZoneIndex = 1;
-
-        uiRevivePanel.SetActive(false);
-        runManager.StartNewRun();
-        tapeController.Initialize(_currentZoneIndex, zoneConfig.TotalZones);
-
+        _runManager.StartNewRun();
+        tapeController.Initialize(1, zoneConfig.TotalZones);
         LoadZone(_currentZoneIndex);
     }
 
     private void LoadZone(int index)
     {
         _currentZoneIndex = index;
-
         _currentWheelData = zoneConfig.GetWheelForZone(_currentZoneIndex);
         ZoneType zoneType = zoneConfig.GetZoneType(_currentZoneIndex);
 
@@ -54,54 +60,45 @@ public class ZoneManager : MonoBehaviour
         tapeController.ScrollToZone(_currentZoneIndex, () => { _isAnimating = false; });
 
         bool canExit = (zoneType == ZoneType.Safe || zoneType == ZoneType.Super);
-
-        if (uiExitButton)
-            uiExitButton.interactable = canExit;
+        OnZoneLoaded?.Invoke(canExit);
     }
 
-    public void OnSpinButtonClicked()
+    public void RequestSpin()
     {
         if (wheelController.IsSpinning || _isAnimating)
             return;
 
         _isAnimating = true;
-        uiExitButton.interactable = false;
 
-        //TODO : Add weightedRandom
+        OnSpinStarted?.Invoke();
+
         int winnerIndex = wheelController.Random.Next();
-
         wheelController.SpinTo(winnerIndex, OnSpinCompleted);
     }
 
-    public void OnExitButtonClicked()
+    public void RequestExit()
     {
         if (wheelController.IsSpinning)
             return;
 
-        var collectedItems = runManager.Stash.GetItems();
-
-        uiWinPanel.Show(collectedItems, () =>
-        {
-            runManager.StartNewRun();
-
-            ResetZone();
-        });
+        var collectedItems = _runManager.Stash.GetItems();
+        OnGameWin?.Invoke(collectedItems);
     }
 
-    public void OnReviveButtonClicked()
+    public void RequestRevive()
     {
-        uiRevivePanel.SetActive(false);
-
         StartCoroutine(WaitAndAdvanceRoutine(0.5f));
     }
 
-    public void OnGiveUpButtonClicked()
+    public void RequestGiveUp()
     {
-        Debug.Log("Given up!");
-        uiRevivePanel.SetActive(false);
+        _runManager.GiveUp();
+        ResetZone();
+    }
 
-        runManager.GiveUp();
-
+    public void ConfirmWin()
+    {
+        _runManager.StartNewRun();
         ResetZone();
     }
 
@@ -124,7 +121,8 @@ public class ZoneManager : MonoBehaviour
         {
             rewardAnimator.PlayRewardAnimation(slotTransform.position, result.ItemData.Icon, () =>
             {
-                runManager.HandleReward(result);
+                _runManager.HandleReward(result);
+                OnRewardEarned?.Invoke(result);
                 HandleSuccess();
             });
         }
@@ -137,8 +135,7 @@ public class ZoneManager : MonoBehaviour
 
     private void HandleGameOver()
     {
-        if (uiRevivePanel)
-            uiRevivePanel.SetActive(true);
+        OnGameOver?.Invoke();
     }
 
     private IEnumerator WaitAndAdvanceRoutine(float delay)
@@ -147,4 +144,30 @@ public class ZoneManager : MonoBehaviour
 
         LoadZone(_currentZoneIndex + 1);
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (wheelController == null)
+        {
+            wheelController = FindObjectOfType<WheelController>();
+            if (wheelController == null)
+                Debug.LogError($"[ZoneManager] Error: WheelController not assigned and not found in scene.");
+        }
+
+        if(tapeController == null)
+        {
+            tapeController = FindObjectOfType<TapeController>();
+            if (tapeController == null)
+                Debug.LogError($"[ZoneManager] Error: TapeController not assigned and not found in scene.");
+        }
+
+        if (rewardAnimator == null)
+        {
+            rewardAnimator = FindObjectOfType<RewardAnimator>();
+            if (rewardAnimator == null)
+                Debug.LogError($"[ZoneManager] Error: RewardAnimator not assigned and not found in scene.");
+        }
+    }
+#endif
 }

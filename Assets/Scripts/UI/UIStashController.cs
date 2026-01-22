@@ -44,4 +44,34 @@ public class UIStashController : MonoBehaviour
         runManager.Stash.OnStashUpdated -= RefreshUI;
         runManager.Stash.OnStashCleared -= ClearUI;
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (runManager == null)
+        {
+            runManager = GetComponentInParent<RunManager>(true);
+            
+            if (!runManager)
+                Debug.LogError($"[UIStashController] Error: RunManager not found in parent of '{gameObject.name}'.");
+        }
+
+        if (contentParent == null)
+        {
+            var transforms = GetComponentsInChildren<Transform>(true);
+            bool found = false;
+            foreach (var transform in transforms)
+            {
+                if (transform.name == "UI_Stash_Content")
+                {
+                    contentParent = transform;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                Debug.LogError($"[UIStashController] Error: Transform named 'UI_Content' not found in children of '{gameObject.name}'.");
+        }
+    }
+#endif
 }

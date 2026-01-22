@@ -53,4 +53,50 @@ public class TapeController : MonoBehaviour
         contentRect.DOKill();
         contentRect.DOAnchorPosX(targetX, 0.25f).SetEase(Ease.OutBack).OnComplete(()=> onComplete?.Invoke());
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (viewportRect == null)
+        {
+            var rects = GetComponentsInChildren<RectTransform>(true);
+            bool found = false;
+            foreach (var rect in rects)
+            {
+                if (rect.name == "UI_TapeBar_Viewport")
+                {
+                    viewportRect = rect;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[TapeController] Error: RectTransform named 'Viewport' not found in children of '{gameObject.name}'.");
+        }
+
+        if (contentRect == null)
+        {
+            var rects = GetComponentsInChildren<RectTransform>(true);
+            bool found = false;
+            foreach (var rect in rects)
+            {
+                if (rect.name == "UI_TapeBar_Content")
+                {
+                    contentRect = rect;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[TapeController] Error: RectTransform named 'Content' not found in children of '{gameObject.name}'.");
+        }
+
+        if (layoutGroup == null && contentRect != null)
+        {
+            layoutGroup = contentRect.GetComponent<HorizontalLayoutGroup>();
+            if (layoutGroup == null) 
+                Debug.LogError($"[TapeController] Error: 'HorizontalLayoutGroup' component missing on '{contentRect.name}'.");
+        }
+    }
+#endif
 }

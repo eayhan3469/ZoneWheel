@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Molotov
   Icon: {fileID: 21300000, guid: 65a40b56b59092441b7cf3f24a522451, type: 3}
+  Category: 3

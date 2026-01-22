@@ -21,22 +21,22 @@ MonoBehaviour:
     DropChance: 30
   - ItemData: {fileID: 11400000, guid: 0a489129ed69b714ba17c8492d4a38b1, type: 2}
     Amount: 1
-    DropChance: 10
-  - ItemData: {fileID: 11400000, guid: 832c43d6b2aabf2438d9be146993d765, type: 2}
+    DropChance: 6
+  - ItemData: {fileID: 11400000, guid: 1b18595c77e379c4b93759a6b11d7f46, type: 2}
     Amount: 1
-    DropChance: 20
+    DropChance: 6
   - ItemData: {fileID: 11400000, guid: a942f1e13200e9b43879e935ffb12b50, type: 2}
     Amount: 30
-    DropChance: 10
+    DropChance: 16
   - ItemData: {fileID: 11400000, guid: c814213cc5fb5f5418aa086dcfaab87f, type: 2}
     Amount: 1
-    DropChance: 1
-  - ItemData: {fileID: 11400000, guid: 1caef5a47b3bb944b980d1b1b7e4551d, type: 2}
+    DropChance: 16
+  - ItemData: {fileID: 11400000, guid: 23fe48ebc0dc76a42a0615584b48829b, type: 2}
     Amount: 1
-    DropChance: 1
+    DropChance: 12
   - ItemData: {fileID: 11400000, guid: 44f00763d07c1d84cb9c51d92ca99d62, type: 2}
     Amount: 1
-    DropChance: 1
-  - ItemData: {fileID: 11400000, guid: 821f7320f4295b9419f7ee2928920286, type: 2}
+    DropChance: 2
+  - ItemData: {fileID: 11400000, guid: 4f7123d010644904cb2d1cb02997ec23, type: 2}
     Amount: 1
-    DropChance: 1
+    DropChance: 12

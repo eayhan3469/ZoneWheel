@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UI_Atlas_Frames
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 2248150b5b8709f498fccdf9bf4228b3, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 011dec608a92f6c42b8f124a718e43f8, type: 3}
+  - {fileID: 21300000, guid: 7f4c7de02f8d87f4e9edf7f55ab90908, type: 3}
+  - {fileID: 21300000, guid: f107c122a206bb74fae27c635cbcc3a8, type: 3}
+  - {fileID: 21300000, guid: 51a6b2e242abad247bcf9427fdc0fdbd, type: 3}
+  - {fileID: 21300000, guid: 093ce1239d595614594b9bc6910be7bf, type: 3}
+  - {fileID: 21300000, guid: 6b31a163dba12764ca21861af9db1dd8, type: 3}
+  - {fileID: 21300000, guid: 8859d693cace7d845bbbfe46e8c4fac4, type: 3}
+  - {fileID: 21300000, guid: f9ac999329d2ce440b36cce31f8170bb, type: 3}
+  - {fileID: 21300000, guid: a6c5d7943cdb6604a8becfdd0cc804c9, type: 3}
+  - {fileID: 21300000, guid: 3aa872758eac603499d5bf643a2c9819, type: 3}
+  - {fileID: 21300000, guid: 56d79d2687a383c4ca0c4e1b33e2cb28, type: 3}
+  - {fileID: 21300000, guid: 1ea27d4629f6d3849910eb61dc32fb71, type: 3}
+  - {fileID: 21300000, guid: 3fb019677c368bc40bb3369f7635cbf8, type: 3}
+  - {fileID: 21300000, guid: ce5d5daa9b84e4a4583b504b5b9dc6b8, type: 3}
+  - {fileID: 21300000, guid: f5c1618cd12643a4788689ee1f948edb, type: 3}
+  - {fileID: 21300000, guid: 7acd6d1e8e1c6e24c88a2f1c52b03c31, type: 3}
+  - {fileID: 21300000, guid: 6a51795f7fc39a04685265f92084c138, type: 3}
+  - {fileID: 21300000, guid: 0d7d526fbfcc39e4e95831a0d07bc34e, type: 3}
+  - {fileID: 21300000, guid: c5b13eefa6ecaeb4d886a3ad3f71e967, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - ui_spin_silver_indicator
+  - ui_card_panel_zone_white
+  - ui_card_frame_4px_zone
+  - ui_spin_golden_base
+  - ui_card_frame_gardient
+  - ui_card_panel_zone_current
+  - ui_card_panel_zone_super
+  - ui_spin_generic_button
+  - ui_spin_silver_base
+  - ui_card_panel_zone_coming
+  - UI_button_grey_standard
+  - ui_spin_bronze_base
+  - ui_spin_bronze_indicator
+  - ui_spin_golden_indicator
+  - ui_card_zone_map_frame
+  - UI_button_orange_standard
+  - ui_card_frame_12px_neutral
+  - ui_card_panel_zone_current_white
+  - ui_card_panel_zone_bg
+  m_RenderDataMap: {}
+  m_Tag: UI_Atlas_Frames
+  m_IsVariant: 0

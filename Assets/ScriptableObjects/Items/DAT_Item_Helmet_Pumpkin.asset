@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Pumpkin
   Icon: {fileID: 21300000, guid: fbc7ed07c8ffdf2449c6645674306d8c, type: 3}
+  Category: 7

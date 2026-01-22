@@ -12,9 +12,12 @@ public class ItemData : ScriptableObject
 
 public enum ItemCategory : byte
 {
-    Coin,
-    Gold,
-    Weapon,
-    Armor,
-    Bomb
+    Currency = 0,
+    Weapon = 1,
+    Armor = 2,
+    Consumable = 3,
+    Points = 4,
+    Chest = 5,
+    Bomb = 6,
+    Cosmetic = 7
 }

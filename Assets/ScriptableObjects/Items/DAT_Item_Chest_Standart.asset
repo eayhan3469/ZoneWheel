@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Standart Chest
   Icon: {fileID: 21300000, guid: 45174484c1a413b4099626294635ae9d, type: 3}
+  Category: 5

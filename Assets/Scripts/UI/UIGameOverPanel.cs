@@ -51,4 +51,52 @@ public class UIGameOverPanel : MonoBehaviour
 
         _onConfirmAction?.Invoke();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (claimButton == null)
+        {
+            var buttons = GetComponentsInChildren<Button>(true);
+            bool found = false;
+            foreach (var btn in buttons)
+            {
+                if (btn.name == "UI_Button_Claim")
+                {
+                    claimButton = btn;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[UIGameOverPanel] Error: Button named 'Button_Claim' not found in children of '{gameObject.name}'.");
+        }
+
+        if (contentRect == null)
+        {
+            var rects = GetComponentsInChildren<RectTransform>(true);
+            bool found = false;
+            foreach (var rect in rects)
+            {
+                if (rect.name == "UI_Content")
+                {
+                    contentRect = rect;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[UIGameOverPanel] Error: RectTransform named 'Content' not found in children of '{gameObject.name}'.");
+        }
+
+        if (layoutGroup == null && contentRect != null)
+        {
+            layoutGroup = contentRect.GetComponent<HorizontalLayoutGroup>();
+            if (layoutGroup == null) Debug.LogError($"[UIGameOverPanel] Error: 'HorizontalLayoutGroup' component missing on '{contentRect.name}'.");
+        }
+
+        // 4. Panel Object (Self)
+        if (panelObject == null) panelObject = this.gameObject;
+    }
+#endif
 }

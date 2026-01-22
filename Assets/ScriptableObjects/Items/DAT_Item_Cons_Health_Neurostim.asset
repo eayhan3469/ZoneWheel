@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: NeuroStim
   Icon: {fileID: 21300000, guid: 189cb2d5341591949aac3628cc3d7dba, type: 3}
+  Category: 3

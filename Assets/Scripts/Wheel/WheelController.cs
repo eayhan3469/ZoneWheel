@@ -95,4 +95,61 @@ public class WheelController : MonoBehaviour
                 }
             });
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (wheelRotator == null)
+        {
+            var transforms = GetComponentsInChildren<Transform>(true);
+            bool found = false;
+            foreach (var t in transforms)
+            {
+                if (t.name == "UI_Wheel_Rotator")
+                {
+                    wheelRotator = t;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) 
+                Debug.LogError($"[WheelController] Error: Transform named 'WheelRotator' not found in children of '{gameObject.name}'.");
+        }
+
+        if (wheelBackgroundImage == null)
+        {
+            var images = GetComponentsInChildren<Image>(true);
+            bool found = false;
+            foreach (var img in images)
+            {
+                if (img.name == "UI_Wheel_Rotator")
+                {
+                    wheelBackgroundImage = img;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[WheelController] Error: Image named 'Wheel_BG' not found in children of '{gameObject.name}'.");
+        }
+
+        if (wheelIndicatorImage == null)
+        {
+            var images = GetComponentsInChildren<Image>(true);
+            bool found = false;
+            foreach (var img in images)
+            {
+                if (img.name == "UI_Image_Wheel_Indicator")
+                {
+                    wheelIndicatorImage = img;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) 
+                Debug.LogError($"[WheelController] Error: Image named 'Wheel_Indicator' not found in children of '{gameObject.name}'.");
+        }
+    }
+#endif
 }

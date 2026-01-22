@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: Bronze Chest
   Icon: {fileID: 21300000, guid: 9bf398b32d47bb343bdfd651840a6fc4, type: 3}
+  Category: 5

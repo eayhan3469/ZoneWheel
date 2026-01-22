@@ -10,7 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7df75306306a77e4a9fa14eece7a7599, type: 3}
-  m_Name: DAT_Item_Melee_Bayonet_SummerVice
+  m_Name: DAT_Item_Point_Armor
   m_EditorClassIdentifier: 
-  DisplayName: SummerVice
-  Icon: {fileID: 21300000, guid: 01fe9bd18a472e941bd7656ac4884921, type: 3}
+  DisplayName: ArmorPoint
+  Icon: {fileID: 21300000, guid: 1a1bc4566924c4840b4fff2120b1440d, type: 3}
+  Category: 4

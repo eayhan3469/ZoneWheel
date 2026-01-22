@@ -18,25 +18,25 @@ MonoBehaviour:
   WheelEntries:
   - ItemData: {fileID: 11400000, guid: 5b95e7f098e331e438dd4b92dfe9166f, type: 2}
     Amount: 50
-    DropChance: 10
-  - ItemData: {fileID: 11400000, guid: 0a489129ed69b714ba17c8492d4a38b1, type: 2}
-    Amount: 1
-    DropChance: 11
-  - ItemData: {fileID: 11400000, guid: 832c43d6b2aabf2438d9be146993d765, type: 2}
-    Amount: 1
-    DropChance: 12
-  - ItemData: {fileID: 11400000, guid: a942f1e13200e9b43879e935ffb12b50, type: 2}
-    Amount: 30
-    DropChance: 15
-  - ItemData: {fileID: 11400000, guid: c814213cc5fb5f5418aa086dcfaab87f, type: 2}
-    Amount: 1
-    DropChance: 13
-  - ItemData: {fileID: 11400000, guid: 1caef5a47b3bb944b980d1b1b7e4551d, type: 2}
-    Amount: 1
-    DropChance: 15
-  - ItemData: {fileID: 11400000, guid: 016a3c9af2d2b1b4bb7ae330bed494a4, type: 2}
-    Amount: 1
-    DropChance: 24
+    DropChance: 28
   - ItemData: {fileID: 11400000, guid: 821f7320f4295b9419f7ee2928920286, type: 2}
     Amount: 1
-    DropChance: 0
+    DropChance: 13
+  - ItemData: {fileID: 11400000, guid: 757874dc853bc3e4eb99523004431857, type: 2}
+    Amount: 1
+    DropChance: 17
+  - ItemData: {fileID: 11400000, guid: a942f1e13200e9b43879e935ffb12b50, type: 2}
+    Amount: 30
+    DropChance: 12
+  - ItemData: {fileID: 11400000, guid: b468a9f9fcb51bd4d83ff4afec018fc7, type: 2}
+    Amount: 1
+    DropChance: 12
+  - ItemData: {fileID: 11400000, guid: 4f7123d010644904cb2d1cb02997ec23, type: 2}
+    Amount: 1
+    DropChance: 12
+  - ItemData: {fileID: 11400000, guid: 016a3c9af2d2b1b4bb7ae330bed494a4, type: 2}
+    Amount: 1
+    DropChance: 5
+  - ItemData: {fileID: 11400000, guid: 832c43d6b2aabf2438d9be146993d765, type: 2}
+    Amount: 1
+    DropChance: 1
